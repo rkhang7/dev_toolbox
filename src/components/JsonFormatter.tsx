@@ -99,43 +99,43 @@ export default function JsonFormatter() {
         </p>
       </header>
 
-      <section
-        className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)]"
-      >
-        <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="json-input">
-          Input JSON
-        </label>
-        <textarea
-          id="json-input"
-          className="min-h-[240px] w-full resize-y rounded-xl border border-[#bdd2e3] bg-[#f9fcff] p-4 font-mono text-[0.92rem] leading-6 text-[#12344d] outline-none transition focus:border-[#19a7ce] focus:ring-4 focus:ring-[#19a7ce]/25"
-          value={inputJson}
-          onChange={(event) => handleInputChange(event.target.value)}
-          placeholder='Vi du: {"name":"Copilot","skills":["format","validate"]}'
-          spellCheck={false}
-        />
+      <div className="space-y-4 lg:col-start-1 lg:row-start-2">
+        <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)]">
+          <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="json-input">
+            Input JSON
+          </label>
+          <textarea
+            id="json-input"
+            className="min-h-[240px] w-full resize-y rounded-xl border border-[#bdd2e3] bg-[#f9fcff] p-4 font-mono text-[0.92rem] leading-6 text-[#12344d] outline-none transition focus:border-[#19a7ce] focus:ring-4 focus:ring-[#19a7ce]/25"
+            value={inputJson}
+            onChange={(event) => handleInputChange(event.target.value)}
+            placeholder='Vi du: {"name":"Copilot","skills":["format","validate"]}'
+            spellCheck={false}
+          />
 
-        <div className="mt-3 flex flex-wrap gap-2.5">
-          <button
-            type="button"
-            className="rounded-[10px] bg-[#e5f2fa] px-4 py-2.5 text-sm font-semibold text-[#0f3554] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
-            onClick={handleClear}
-            disabled={!inputJson && !formattedJson}
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            <button
+              type="button"
+              className="rounded-[10px] bg-[#e5f2fa] px-4 py-2.5 text-sm font-semibold text-[#0f3554] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
+              onClick={handleClear}
+              disabled={!inputJson && !formattedJson}
+            >
+              Clear
+            </button>
+          </div>
+        </section>
+
+        {errorMessage && (
+          <p
+            role="alert"
+            className="rounded-xl border border-[#f5b7b1] bg-[#fff3f2] px-4 py-3 text-sm text-[#9f2121]"
           >
-            Clear
-          </button>
-        </div>
-      </section>
+            {errorMessage}
+          </p>
+        )}
+      </div>
 
-      {errorMessage && (
-        <p
-          role="alert"
-          className="rounded-xl border border-[#f5b7b1] bg-[#fff3f2] px-4 py-3 text-sm text-[#9f2121]"
-        >
-          {errorMessage}
-        </p>
-      )}
-
-      <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:sticky lg:top-4">
+      <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-2 lg:row-start-2 lg:sticky lg:top-4">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div className="text-sm font-semibold text-[#4b657c]">Formatted Output</div>
           <div className="flex flex-wrap gap-2">
