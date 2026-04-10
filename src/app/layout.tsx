@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${bodyFont.variable} ${monoFont.variable}`}>
+    <html lang="en" className={`${bodyFont.variable} ${monoFont.variable}`}>
       <body>{children}</body>
     </html>
   );
