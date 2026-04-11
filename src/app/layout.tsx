@@ -14,8 +14,8 @@ const monoFont = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JSON Formatter",
-  description: "Format JSON quickly with a clean and responsive interface.",
+  title: "Developer Toolbox",
+  description: "A collection of useful tools for developers.",
 };
 
 export default function RootLayout({
@@ -24,8 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${monoFont.variable}`}>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${bodyFont.variable} ${monoFont.variable}`}
+      suppressHydrationWarning
+    >
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
