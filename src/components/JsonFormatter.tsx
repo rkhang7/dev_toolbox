@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 
 type ActionState = "idle" | "copied";
-type ToolKey = "json" | "qr" | "barcode";
+type ToolKey = "json" | "qr" | "barcode" | "random";
 
 function formatJsonInput(raw: string): string {
   const parsed = JSON.parse(raw);
@@ -17,6 +17,7 @@ const tools: Array<{ key: ToolKey; label: string }> = [
   { key: "json", label: "JSON Formatter" },
   { key: "qr", label: "QR Code" },
   { key: "barcode", label: "Barcode" },
+  { key: "random", label: "Random Number" },
 ];
 
 export default function JsonFormatter() {
@@ -38,6 +39,13 @@ export default function JsonFormatter() {
   const [barcodeTextActionState, setBarcodeTextActionState] = useState<ActionState>("idle");
   const [barcodeImageActionState, setBarcodeImageActionState] = useState<ActionState>("idle");
   const barcodeRef = useRef<SVGSVGElement | null>(null);
+
+  const [randomStart, setRandomStart] = useState("1");
+  const [randomEnd, setRandomEnd] = useState("2");
+  const [randomCount, setRandomCount] = useState("1");
+  const [randomValues, setRandomValues] = useState<number[]>([]);
+  const [randomError, setRandomError] = useState("");
+  const [randomActionState, setRandomActionState] = useState<ActionState>("idle");
 
   const copyText = async (value: string, setState: (state: ActionState) => void) => {
     if (!value) {
@@ -239,6 +247,46 @@ export default function JsonFormatter() {
     );
   };
 
+  const handleGenerateRandom = () => {
+    const parsedStart = Number(randomStart);
+    const parsedEnd = Number(randomEnd);
+    const parsedCount = Number(randomCount);
+
+    setRandomActionState("idle");
+
+    if (!Number.isFinite(parsedStart) || !Number.isFinite(parsedEnd)) {
+      setRandomValues([]);
+      setRandomError("Please enter valid numbers for start and end.");
+      return;
+    }
+
+    if (!Number.isInteger(parsedCount) || parsedCount < 1) {
+      setRandomValues([]);
+      setRandomError("Count must be an integer greater than or equal to 1.");
+      return;
+    }
+
+    const lowerBound = Math.min(parsedStart, parsedEnd);
+    const upperBound = Math.max(parsedStart, parsedEnd);
+
+    const generated = Array.from({ length: parsedCount }, () => {
+      const random = Math.random() * (upperBound - lowerBound + 1);
+      return Math.floor(random) + lowerBound;
+    });
+
+    setRandomValues(generated);
+    setRandomError("");
+  };
+
+  const handleClearRandom = () => {
+    setRandomStart("1");
+    setRandomEnd("2");
+    setRandomCount("1");
+    setRandomValues([]);
+    setRandomError("");
+    setRandomActionState("idle");
+  };
+
   useEffect(() => {
     if (!qrText.trim()) {
       setQrImage("");
@@ -307,10 +355,10 @@ export default function JsonFormatter() {
     <section className="mx-auto grid w-[min(1024px,calc(100%-2rem))] gap-4 px-0 pb-12 pt-4 lg:grid-cols-2 lg:items-start">
       <header className="rounded-[18px] bg-gradient-to-br from-[#0d253f] via-[#146c94] to-[#19a7ce] p-5 text-[#f9fbfd] shadow-[0_14px_36px_rgba(13,37,63,0.2)] lg:col-span-2">
         <p className="text-xs uppercase tracking-[0.14em] opacity-85">Developer Toolbox</p>
-        <h1 className="mt-1 text-[clamp(1.6rem,4vw,2.35rem)] font-semibold">JSON, QR & Barcode Studio</h1>
-        <p>A clean interface to format JSON and generate QR/Barcode instantly.</p>
+        <h1 className="mt-1 text-[clamp(1.6rem,4vw,2.35rem)] font-semibold">JSON, QR, Barcode & Random Studio</h1>
+        <p>A clean interface to format JSON and generate QR, Barcode, and random numbers instantly.</p>
 
-        <nav className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <nav className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-4">
           {tools.map((tool) => {
             const isActive = activeTool === tool.key;
             return (
@@ -542,6 +590,106 @@ export default function JsonFormatter() {
               ) : (
                 <p className="text-sm text-[#4b657c]">Barcode preview will appear here.</p>
               )}
+            </div>
+          </section>
+        </>
+      )}
+
+      {activeTool === "random" && (
+        <>
+          <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-1 lg:row-start-2">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="random-start">
+                  Start
+                </label>
+                <input
+                  id="random-start"
+                  type="number"
+                  className="w-full rounded-xl border border-[#bdd2e3] bg-[#f9fcff] px-3.5 py-2.5 text-[0.92rem] text-[#12344d] outline-none transition focus:border-[#19a7ce] focus:ring-4 focus:ring-[#19a7ce]/25"
+                  value={randomStart}
+                  onChange={(event) => {
+                    setRandomStart(event.target.value);
+                    setRandomActionState("idle");
+                  }}
+                  placeholder="1"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="random-end">
+                  End
+                </label>
+                <input
+                  id="random-end"
+                  type="number"
+                  className="w-full rounded-xl border border-[#bdd2e3] bg-[#f9fcff] px-3.5 py-2.5 text-[0.92rem] text-[#12344d] outline-none transition focus:border-[#19a7ce] focus:ring-4 focus:ring-[#19a7ce]/25"
+                  value={randomEnd}
+                  onChange={(event) => {
+                    setRandomEnd(event.target.value);
+                    setRandomActionState("idle");
+                  }}
+                  placeholder="2"
+                />
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="random-count">
+                Count
+              </label>
+              <input
+                id="random-count"
+                type="number"
+                min={1}
+                step={1}
+                className="w-full rounded-xl border border-[#bdd2e3] bg-[#f9fcff] px-3.5 py-2.5 text-[0.92rem] text-[#12344d] outline-none transition focus:border-[#19a7ce] focus:ring-4 focus:ring-[#19a7ce]/25"
+                value={randomCount}
+                onChange={(event) => {
+                  setRandomCount(event.target.value);
+                  setRandomActionState("idle");
+                }}
+                placeholder="1"
+              />
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded-[10px] bg-[#0f3554] px-3.5 py-2 text-sm font-semibold text-[#f6fbff] transition hover:-translate-y-px"
+                onClick={handleGenerateRandom}
+              >
+                Generate
+              </button>
+              <button
+                type="button"
+                className="rounded-[10px] bg-[#e5f2fa] px-3.5 py-2 text-sm font-semibold text-[#0f3554] transition hover:-translate-y-px"
+                onClick={handleClearRandom}
+              >
+                Reset
+              </button>
+            </div>
+
+            {randomError && (
+              <p className="mt-3 rounded-xl border border-[#f5b7b1] bg-[#fff3f2] px-4 py-3 text-sm text-[#9f2121]">{randomError}</p>
+            )}
+          </section>
+
+          <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-2 lg:row-start-2 lg:sticky lg:top-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="text-sm font-semibold text-[#4b657c]">Random Result</div>
+              <button
+                type="button"
+                className="rounded-[10px] bg-[#e5f2fa] px-3.5 py-2 text-sm font-semibold text-[#0f3554] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
+                onClick={() => copyText(randomValues.join(", "), setRandomActionState)}
+                disabled={!randomValues.length}
+              >
+                {randomActionState === "copied" ? "Copied" : "Copy"}
+              </button>
+            </div>
+
+            <div className="min-h-[180px] rounded-xl border border-[#d7e6f0] bg-[#0f1f2e] p-4 font-mono text-sm leading-6 text-[#d2f0ff]">
+              {randomValues.length ? randomValues.join(", ") : "Generated numbers will appear here."}
             </div>
           </section>
         </>
