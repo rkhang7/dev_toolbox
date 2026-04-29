@@ -46,6 +46,7 @@ export default function JsonFormatter() {
   const [randomValues, setRandomValues] = useState<number[]>([]);
   const [randomError, setRandomError] = useState("");
   const [randomActionState, setRandomActionState] = useState<ActionState>("idle");
+  const [randomLoading, setRandomLoading] = useState(false);
 
   const copyText = async (value: string, setState: (state: ActionState) => void) => {
     if (!value) {
@@ -247,35 +248,46 @@ export default function JsonFormatter() {
     );
   };
 
-  const handleGenerateRandom = () => {
+  const handleGenerateRandom = async () => {
+    if (randomLoading) {
+      return;
+    }
+
     const parsedStart = Number(randomStart);
     const parsedEnd = Number(randomEnd);
     const parsedCount = Number(randomCount);
 
     setRandomActionState("idle");
+    setRandomLoading(true);
 
-    if (!Number.isFinite(parsedStart) || !Number.isFinite(parsedEnd)) {
-      setRandomValues([]);
-      setRandomError("Please enter valid numbers for start and end.");
-      return;
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+
+    try {
+      if (!Number.isFinite(parsedStart) || !Number.isFinite(parsedEnd)) {
+        setRandomValues([]);
+        setRandomError("Please enter valid numbers for start and end.");
+        return;
+      }
+
+      if (!Number.isInteger(parsedCount) || parsedCount < 1) {
+        setRandomValues([]);
+        setRandomError("Count must be an integer greater than or equal to 1.");
+        return;
+      }
+
+      const lowerBound = Math.min(parsedStart, parsedEnd);
+      const upperBound = Math.max(parsedStart, parsedEnd);
+
+      const generated = Array.from({ length: parsedCount }, () => {
+        const random = Math.random() * (upperBound - lowerBound + 1);
+        return Math.floor(random) + lowerBound;
+      });
+
+      setRandomValues(generated);
+      setRandomError("");
+    } finally {
+      setRandomLoading(false);
     }
-
-    if (!Number.isInteger(parsedCount) || parsedCount < 1) {
-      setRandomValues([]);
-      setRandomError("Count must be an integer greater than or equal to 1.");
-      return;
-    }
-
-    const lowerBound = Math.min(parsedStart, parsedEnd);
-    const upperBound = Math.max(parsedStart, parsedEnd);
-
-    const generated = Array.from({ length: parsedCount }, () => {
-      const random = Math.random() * (upperBound - lowerBound + 1);
-      return Math.floor(random) + lowerBound;
-    });
-
-    setRandomValues(generated);
-    setRandomError("");
   };
 
   const handleClearRandom = () => {
@@ -357,16 +369,6 @@ export default function JsonFormatter() {
         <p className="text-xs uppercase tracking-[0.14em] opacity-85">Developer Toolbox</p>
         <h1 className="mt-1 text-[clamp(1.6rem,4vw,2.35rem)] font-semibold">JSON, QR, Barcode & Random Studio</h1>
         <p>A clean interface to format JSON and generate QR, Barcode, and random numbers instantly.</p>
-        <div className="mt-3 inline-flex flex-wrap items-center gap-3 rounded-xl border border-white/35 bg-white/15 px-3.5 py-2 text-sm text-white backdrop-blur-sm">
-          <span className="rounded-md bg-white/20 px-2 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/90">
-            Author
-          </span>
-          <span className="font-semibold">Hoàng Xuân Khang</span>
-          <span className="hidden text-white/65 sm:inline">|</span>
-          <a className="underline-offset-4 hover:underline" href="tel:0367922251">
-            0367922251
-          </a>
-        </div>
 
         <nav className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-4">
           {tools.map((tool) => {
@@ -607,7 +609,13 @@ export default function JsonFormatter() {
 
       {activeTool === "random" && (
         <>
-          <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-1 lg:row-start-2">
+          <form
+            className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-1 lg:row-start-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleGenerateRandom();
+            }}
+          >
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-2 inline-block text-sm font-semibold text-[#0f3554]" htmlFor="random-start">
@@ -665,11 +673,14 @@ export default function JsonFormatter() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <button
-                type="button"
-                className="rounded-[10px] bg-[#0f3554] px-3.5 py-2 text-sm font-semibold text-[#f6fbff] transition hover:-translate-y-px"
-                onClick={handleGenerateRandom}
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-[10px] bg-[#0f3554] px-3.5 py-2 text-sm font-semibold text-[#f6fbff] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={randomLoading}
               >
-                Generate
+                {randomLoading && (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+                )}
+                {randomLoading ? "Generating..." : "Generate"}
               </button>
               <button
                 type="button"
@@ -683,7 +694,7 @@ export default function JsonFormatter() {
             {randomError && (
               <p className="mt-3 rounded-xl border border-[#f5b7b1] bg-[#fff3f2] px-4 py-3 text-sm text-[#9f2121]">{randomError}</p>
             )}
-          </section>
+          </form>
 
           <section className="rounded-[18px] border border-[#dbe7f1] bg-white p-4 shadow-[0_10px_30px_rgba(10,57,87,0.08)] lg:col-start-2 lg:row-start-2 lg:sticky lg:top-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -704,6 +715,15 @@ export default function JsonFormatter() {
           </section>
         </>
       )}
+
+        <footer className="lg:col-span-2">
+          <div className="mt-2 flex flex-col gap-2 rounded-[16px] border border-[#dbe7f1] bg-white/85 px-4 py-3 text-sm text-[#4b657c] shadow-[0_8px_24px_rgba(10,57,87,0.05)] backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-semibold text-[#0f3554]">Created by Hoàng Xuân Khang</span>
+            <a className="inline-flex w-fit items-center rounded-full bg-[#e5f2fa] px-3 py-1.5 text-[#0f3554] transition hover:bg-[#d7ebf7] hover:underline" href="tel:0367922251">
+              0367922251
+            </a>
+          </div>
+        </footer>
     </section>
   );
 }
