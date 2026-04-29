@@ -357,6 +357,16 @@ export default function JsonFormatter() {
         <p className="text-xs uppercase tracking-[0.14em] opacity-85">Developer Toolbox</p>
         <h1 className="mt-1 text-[clamp(1.6rem,4vw,2.35rem)] font-semibold">JSON, QR, Barcode & Random Studio</h1>
         <p>A clean interface to format JSON and generate QR, Barcode, and random numbers instantly.</p>
+        <div className="mt-3 inline-flex flex-wrap items-center gap-3 rounded-xl border border-white/35 bg-white/15 px-3.5 py-2 text-sm text-white backdrop-blur-sm">
+          <span className="rounded-md bg-white/20 px-2 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/90">
+            Author
+          </span>
+          <span className="font-semibold">Hoàng Xuân Khang</span>
+          <span className="hidden text-white/65 sm:inline">|</span>
+          <a className="underline-offset-4 hover:underline" href="tel:0367922251">
+            0367922251
+          </a>
+        </div>
 
         <nav className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-4">
           {tools.map((tool) => {
