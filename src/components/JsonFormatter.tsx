@@ -260,7 +260,7 @@ export default function JsonFormatter() {
     setRandomActionState("idle");
     setRandomLoading(true);
 
-    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    await new Promise((resolve) => window.setTimeout(resolve, 500));
 
     try {
       if (!Number.isFinite(parsedStart) || !Number.isFinite(parsedEnd)) {
